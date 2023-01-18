@@ -8,6 +8,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CollapseModule } from 'ngx-bootstrap/collapse';
 import { NavbarComponentModule } from './components/navbar/navbar.component-module';
+import { FooterComponentModule } from './components/footer/footer.component-module';
 
 @NgModule({
   declarations: [AppComponent],
@@ -20,6 +21,7 @@ import { NavbarComponentModule } from './components/navbar/navbar.component-modu
     CommonModule,
     RouterModule,
     NavbarComponentModule,
+    FooterComponentModule,
   ],
   providers: [],
   bootstrap: [AppComponent],
