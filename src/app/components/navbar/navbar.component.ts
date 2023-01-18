@@ -23,8 +23,4 @@ export class NavbarComponent {
     private _categoryService: CategoryService,
     private _router: Router
   ) {}
-
-  navigateToCategory(categoryId: string): void {
-    this._router.navigateByUrl('/categories/' + categoryId);
-  }
 }

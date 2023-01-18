@@ -7,7 +7,7 @@
           <a
             class="nav-link active"
             aria-current="page"
-            (click)="navigateToCategory(category.id)"
+            [routerLink]="'/categories/' + category.id"
             >{{ category.name }}</a
           >
         </li>
