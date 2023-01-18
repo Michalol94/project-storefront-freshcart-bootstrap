@@ -1,12 +1,15 @@
 <section>
   <nav class="navbar navbar-expand-lg bg-light">
     <div class="container-fluid">
-      <a class="navbar-brand" href="#">FreshCart</a>
+      <a class="navbar-brand">FreshCart</a>
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <li class="nav-item" *ngFor="let category of categories$ | async">
-          <a class="nav-link active" aria-current="page" href="#">{{
-            category.name
-          }}</a>
+          <a
+            class="nav-link active"
+            aria-current="page"
+            (click)="navigateToCategory(category.id)"
+            >{{ category.name }}</a
+          >
         </li>
       </ul>
     </div>
