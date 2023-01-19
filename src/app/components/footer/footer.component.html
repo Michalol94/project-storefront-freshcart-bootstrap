@@ -1,0 +1,40 @@
+<footer>
+  <div class="container-fluid">
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+      <div class="col">
+        <div class="card-body">
+          <h5 class="card-title">Categories</h5>
+          <ul class="navbar-nav">
+            <li *ngFor="let category of categories$ | async" class="nav-item">
+              <a [routerLink]="'/categories/' + category.id" class="nav-link">{{
+                category.name
+              }}</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card-body">
+          <h5 class="card-title">Stores</h5>
+          <ul class="navbar-nav">
+            <li *ngFor="let store of stores$ | async" class="nav-item">
+              <a [routerLink]="'/stores/' + store.id" class="nav-link">{{
+                store.name
+              }}</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card-body">
+          <h5 class="card-title">Get to know us</h5>
+          <ul class="navbar-nav">
+            <li *ngFor="let item of hardCoded$ | async" class="nav-item">
+              <a class="nav-link">{{ item }}</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
