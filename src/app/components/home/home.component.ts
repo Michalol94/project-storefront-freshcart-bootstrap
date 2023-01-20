@@ -4,8 +4,10 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { Observable, combineLatest, map } from 'rxjs';
+import { ProductModel } from 'src/app/models/product.model';
 import { StoreTagIdModel } from 'src/app/models/store-tag-id.model';
 import { StoreWithTagsQueryModel } from 'src/app/models/store-with-tags-query.model';
+import { ProductService } from 'src/app/services/product.service';
 import { CategoryModel } from '../../models/category.model';
 import { StoreModel } from '../../models/store.model';
 import { CategoryService } from '../../services/category.service';
@@ -33,9 +35,39 @@ export class HomeComponent {
       map(([stores, tagIds]) => this.mapToStoreQuery(stores, tagIds))
     );
 
+  readonly fruitsAndVegetables$: Observable<ProductModel[]> =
+    this._productService.getAll().pipe(
+      map((products) =>
+        products
+          .filter((product) => product.categoryId === '5')
+          .sort((a, b) => {
+            if (a.featureValue > b.featureValue) return -1;
+            if (a.featureValue < b.featureValue) return 1;
+            return 0;
+          })
+          .slice(0, 5)
+      )
+    );
+
+  readonly snackAndMunchies$: Observable<ProductModel[]> = this._productService
+    .getAll()
+    .pipe(
+      map((products) =>
+        products
+          .filter((product) => product.categoryId === '2')
+          .sort((a, b) => {
+            if (a.featureValue > b.featureValue) return -1;
+            if (a.featureValue < b.featureValue) return 1;
+            return 0;
+          })
+          .slice(0, 5)
+      )
+    );
+
   constructor(
     private _categoryService: CategoryService,
-    private _storeService: StoreService
+    private _storeService: StoreService,
+    private _productService: ProductService
   ) {}
 
   mapToStoreQuery(
