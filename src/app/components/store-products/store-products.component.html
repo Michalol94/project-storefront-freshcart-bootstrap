@@ -1,1 +1,57 @@
-stores
+<section class="my-lg-14 my-8" *ngIf="store$ | async as store">
+  <div class="container">
+    <div class="row">
+      <div class="col-12 col-lg-3 col-md-4 mb-4 mb-md-0">
+        <div class="d-flex flex-column">
+          <div>
+            <img
+              class="rounded-circle icon-shape icon-xxl"
+              [src]="store.logoUrl"
+            />
+          </div>
+          <div class="mt-4">
+            <h1 class="mb-1 h4">{{ store.name }}</h1>
+
+            <div class="small text-muted">
+              <span>It is only {{ store.distance }} km away from you! </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-lg-9 col-md-8">
+        <div class="card mb-4 bg-light border-0 rounded-4">
+          <!-- card body -->
+          <div class="card-body p-9">
+            <h4 class="mb-0 fs-1">{{ store.name }}</h4>
+            <p class="mb-0 text-muted">
+              Whatever the occasion, we've got you covered
+            </p>
+            <input
+              type="text"
+              class="form-control"
+              [placeholder]="'Check products at ' + store.name"
+            />
+            <img
+              src="/assets/images/svg-graphics/store-graphics.svg"
+              alt=""
+              class="img-fluid"
+            />
+          </div>
+        </div>
+      </div>
+      <h3>{{ store.name }}</h3>
+      <div class="row row-cols-1 row-cols-md-5 g-4">
+        <div *ngFor="let product of storeProducts$ | async" class="col">
+          <a class="text-decoration-none text-inherit">
+            <div class="card card-product">
+              <div class="card-body text-center py-8">
+                <img [src]="product.imageUrl" [alt]="" class="mb-3" />
+                <div class="text-truncate">{{ product.name }}</div>
+              </div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
