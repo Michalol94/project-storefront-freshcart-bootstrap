@@ -23,6 +23,42 @@
             <h4 class="mb-0 fs-1">{{ category.name }}</h4>
           </div>
         </div>
+        <div>
+          <a *ngIf="categoryProducts$ | async as item"
+            >{{ item.length }} Products found.</a
+          >
+          <select class="form-select" [formControl]="sort">
+            Sort products
+
+            <option *ngFor="let item of selectOptions$ | async" [value]="item">
+              {{ item }}
+            </option>
+          </select>
+        </div>
+        <div
+          class="card card-product"
+          *ngFor="let product of categoryProducts$ | async"
+        >
+          <div class="card-body">
+            <div class="position-relative">
+              <!-- img -->
+              <a
+                ><img
+                  [src]="product.imageUrl"
+                  alt="Grocery Ecommerce Template"
+                  class="mb-3 img-fluid"
+              /></a>
+            </div>
+            <!-- title -->
+            <h2 class="fs-6">{{ product.name }}</h2>
+            <!-- price -->
+            <div class="d-flex justify-content-between align-items-center mt-3">
+              <div>
+                <span class="text-dark">${{ product.price }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
