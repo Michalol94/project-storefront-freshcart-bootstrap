@@ -37,7 +37,7 @@
         </div>
         <div
           class="card card-product"
-          *ngFor="let product of categoryProducts$ | async"
+          *ngFor="let product of slicedProducts$ | async"
         >
           <div class="card-body">
             <div class="position-relative">
@@ -56,6 +56,35 @@
               <div>
                 <span class="text-dark">${{ product.price }}</span>
               </div>
+            </div>
+          </div>
+        </div>
+        <div class="row" *ngIf="pagination$ | async as pagination">
+          <div class="col">
+            <div class="btn-group" role="group">Page Limit</div>
+            <button
+              *ngFor="let item of limitProducts$ | async"
+              type="button"
+              class="btn btn btn-outline-primary"
+              (click)="changePageLimit(item)"
+              [disabled]="pagination.pageSize === item"
+            >
+              {{ item }}
+            </button>
+          </div>
+
+          <div class="row">
+            <div class="col">
+              <div class="btn-group" role="group">Page Number</div>
+              <button
+                *ngFor="let item of updatedPages$ | async"
+                type="button"
+                class="btn btn btn-outline-primary"
+                (click)="changePageNumber(item)"
+                [disabled]="pagination.pageNumber === item"
+              >
+                {{ item }}
+              </button>
             </div>
           </div>
         </div>
