@@ -15,6 +15,33 @@
               </li>
             </ul>
           </div>
+
+          <div>
+            <div class="my-4">
+              <!-- input -->
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Price From"
+                [formControl]="filterLow"
+              />
+            </div>
+            <div class="my-4">
+              <!-- input -->
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Price To"
+                [formControl]="filterHigh"
+              />
+            </div>
+            <div *ngIf="filterByLow$ | async as working">
+              {{ working }}
+            </div>
+            <div *ngIf="filterByHigh$ | async as working">
+              {{ working }}
+            </div>
+          </div>
         </div>
       </div>
       <div class="col-12 col-lg-9 col-md-8">
@@ -24,7 +51,7 @@
           </div>
         </div>
         <div>
-          <a *ngIf="categoryProducts$ | async as item"
+          <a *ngIf="filteredAndSortedProducts$ | async as item"
             >{{ item.length }} Products found.</a
           >
           <select class="form-select" [formControl]="sort">
@@ -37,7 +64,7 @@
         </div>
         <div
           class="card card-product"
-          *ngFor="let product of slicedProducts$ | async"
+          *ngFor="let product of filteredAndSortedProducts$ | async"
         >
           <div class="card-body">
             <div class="position-relative">

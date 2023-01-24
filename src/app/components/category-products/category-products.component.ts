@@ -6,7 +6,13 @@ import {
 import { FormControl } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject, Observable, combineLatest, of } from 'rxjs';
-import { filter, map, shareReplay, startWith, switchMap } from 'rxjs/operators';
+import {
+  debounceTime,
+  map,
+  shareReplay,
+  startWith,
+  switchMap,
+} from 'rxjs/operators';
 import { CategoryModel } from '../../models/category.model';
 import { ProductModel } from '../../models/product.model';
 import { CategoryService } from '../../services/category.service';
@@ -35,6 +41,22 @@ export class CategoryProductsComponent {
 
   readonly sort: FormControl = new FormControl('Featured');
 
+  readonly filterLow: FormControl = new FormControl();
+  readonly filterHigh: FormControl = new FormControl();
+
+  readonly filterByLow$: Observable<string> = this.filterLow.valueChanges.pipe(
+    debounceTime(1000),
+    startWith('1'),
+    map((form) => (form ? form : ''))
+  );
+
+  readonly filterByHigh$: Observable<string> =
+    this.filterHigh.valueChanges.pipe(
+      debounceTime(1000),
+      startWith('200'),
+      map((form) => (form ? form : ''))
+    );
+
   readonly categories$: Observable<CategoryModel[]> =
     this._categoryService.getAllCategories();
 
@@ -53,41 +75,59 @@ export class CategoryProductsComponent {
   readonly categoryProducts$: Observable<ProductModel[]> = combineLatest([
     this.categoryId$,
     this._productService.getAll(),
-    this.sort$,
   ]).pipe(
-    map(([catId, products, sort]) => {
-      const prods = products.filter((product) => product.categoryId === catId);
-      if (sort === 'Featured')
-        return prods.sort((a, b) => {
-          if (a.featureValue > b.featureValue) return -1;
-          if (a.featureValue < b.featureValue) return 1;
-          return 0;
-        });
-      if (sort === 'Price: Low to High')
-        return prods.sort((a, b) => {
-          if (a.price > b.price) return 1;
-          if (a.price < b.price) return -1;
-          return 0;
-        });
-      if (sort === 'Price: High to Low')
-        return prods.sort((a, b) => {
-          if (a.price > b.price) return -1;
-          if (a.price < b.price) return 1;
-          return 0;
-        });
-      if (sort === 'Avg. Rating')
-        return prods.sort((a, b) => {
-          if (a.ratingValue > b.ratingValue) return 1;
-          if (a.ratingValue < b.ratingValue) return -1;
-          return 0;
-        });
-      return prods;
-    }),
+    map(([categoryId, products]) =>
+      products.filter((product) => product.categoryId === categoryId)
+    ),
     shareReplay(1)
   );
 
+  readonly filteredAndSortedProducts$: Observable<ProductModel[]> =
+    combineLatest([
+      this.categoryProducts$,
+      this.sort$,
+      this.filterLow.valueChanges.pipe(debounceTime(1000), startWith('1')),
+      this.filterHigh.valueChanges.pipe(debounceTime(1000), startWith('200')),
+    ]).pipe(
+      map(([products, sort, filterLow, filterHigh]) => {
+        const prods: ProductModel[] = products
+          .filter((product) =>
+            filterLow ? product.price >= parseInt(filterLow) : product
+          )
+          .filter((product) =>
+            filterHigh ? product.price <= parseInt(filterHigh) : product
+          );
+        if (sort === 'Featured')
+          return prods.sort((a, b) => {
+            if (a.featureValue > b.featureValue) return -1;
+            if (a.featureValue < b.featureValue) return 1;
+            return 0;
+          });
+        if (sort === 'Price: Low to High')
+          return prods.sort((a, b) => {
+            if (a.price > b.price) return 1;
+            if (a.price < b.price) return -1;
+            return 0;
+          });
+        if (sort === 'Price: High to Low')
+          return prods.sort((a, b) => {
+            if (a.price > b.price) return -1;
+            if (a.price < b.price) return 1;
+            return 0;
+          });
+        if (sort === 'Avg. Rating')
+          return prods.sort((a, b) => {
+            if (a.ratingValue > b.ratingValue) return 1;
+            if (a.ratingValue < b.ratingValue) return -1;
+            return 0;
+          });
+        return prods;
+      }),
+      shareReplay(1)
+    );
+
   readonly slicedProducts$: Observable<ProductModel[]> = combineLatest([
-    this.categoryProducts$,
+    this.filteredAndSortedProducts$,
     this.pagination$,
   ]).pipe(
     map(([products, pagination]) =>
