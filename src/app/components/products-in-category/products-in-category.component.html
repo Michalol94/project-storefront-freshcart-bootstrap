@@ -1,0 +1,125 @@
+<section class="my-lg-14 my-8" *ngIf="category$ | async as category">
+  <div class="container">
+    <div class="row">
+      <div class="col-12 col-lg-3 col-md-4 mb-4 mb-md-0">
+        <div class="col">
+          <div class="card-body">
+            <h4 class="card-title bold">Categories</h4>
+            <ul class="navbar-nav">
+              <li
+                [routerLink]="'/categoryProducts/' + item.id"
+                *ngFor="let item of categories$ | async"
+                class="nav-item"
+              >
+                <a class="nav-link">{{ item.name }}</a>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <div class="my-4">
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Price From"
+                [formControl]="filterLow"
+              />
+            </div>
+            <div class="my-4">
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Price To"
+                [formControl]="filterHigh"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-lg-9 col-md-8">
+        <div class="card mb-4 bg-light border-0 rounded-4">
+          <div class="card-body p-9">
+            <h4 class="mb-0 fs-1">{{ category.name }}</h4>
+          </div>
+        </div>
+        <div>
+          <a *ngIf="filteredAndSortedProducts$ | async as item"
+            >{{ item.length }} Products found.</a
+          >
+          <select class="form-select" [formControl]="sort">
+            Sort products
+
+            <option
+              *ngFor="let item of sortOrder$ | async"
+              [value]="item.value"
+            >
+              {{ item.label }}
+            </option>
+          </select>
+        </div>
+        <div
+          class="card card-product"
+          *ngFor="let product of slicedProducts$ | async"
+        >
+          <div class="card-body">
+            <div class="position-relative">
+              <a
+                ><img
+                  [src]="product.imageUrl"
+                  alt="Grocery Ecommerce Template"
+                  class="mb-3 img-fluid"
+              /></a>
+            </div>
+            <h2 class="fs-6">{{ product.name }}</h2>
+            <div class="d-flex align-items-center mt-3">
+              <small class="text-warning">
+                <i
+                  *ngFor="let val of product.starsRating"
+                  class="bi"
+                  [ngClass]="{
+                    'bi-star-fill': val === 1,
+                    'bi-star': val === 0,
+                    'bi-star-half': val === 0.5
+                  }"
+                ></i>
+              </small>
+              <a>{{ product.ratingValue }}({{ product.ratingCount }})</a>
+            </div>
+            <div>
+              <span class="text-dark">${{ product.price }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="row" *ngIf="pagination$ | async as pagination">
+          <div class="col">
+            <div class="btn-group" role="group">Page Limit</div>
+            <button
+              *ngFor="let item of limitProducts$ | async"
+              type="button"
+              class="btn btn btn-outline-primary"
+              (click)="changePageLimit(item)"
+              [disabled]="pagination.pageSize === item"
+            >
+              {{ item }}
+            </button>
+          </div>
+
+          <div class="row">
+            <div class="col">
+              <div class="btn-group" role="group">Page Number</div>
+              <button
+                *ngFor="let item of updatedPages$ | async"
+                type="button"
+                class="btn btn btn-outline-primary"
+                (click)="changePageNumber(item)"
+                [disabled]="pagination.pageNumber === item"
+              >
+                {{ item }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
