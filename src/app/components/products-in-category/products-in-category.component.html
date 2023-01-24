@@ -7,7 +7,7 @@
             <h4 class="card-title bold">Categories</h4>
             <ul class="navbar-nav">
               <li
-                [routerLink]="'/categories/' + item.id"
+                [routerLink]="'/categoryProducts/' + item.id"
                 *ngFor="let item of categories$ | async"
                 class="nav-item"
               >
@@ -18,7 +18,6 @@
 
           <div>
             <div class="my-4">
-              <!-- input -->
               <input
                 type="text"
                 class="form-control"
@@ -27,19 +26,12 @@
               />
             </div>
             <div class="my-4">
-              <!-- input -->
               <input
                 type="text"
                 class="form-control"
                 placeholder="Price To"
                 [formControl]="filterHigh"
               />
-            </div>
-            <div *ngIf="filterByLow$ | async as working">
-              {{ working }}
-            </div>
-            <div *ngIf="filterByHigh$ | async as working">
-              {{ working }}
             </div>
           </div>
         </div>
@@ -57,18 +49,20 @@
           <select class="form-select" [formControl]="sort">
             Sort products
 
-            <option *ngFor="let item of selectOptions$ | async" [value]="item">
-              {{ item }}
+            <option
+              *ngFor="let item of sortOrder$ | async"
+              [value]="item.value"
+            >
+              {{ item.label }}
             </option>
           </select>
         </div>
         <div
           class="card card-product"
-          *ngFor="let product of filteredAndSortedProducts$ | async"
+          *ngFor="let product of slicedProducts$ | async"
         >
           <div class="card-body">
             <div class="position-relative">
-              <!-- img -->
               <a
                 ><img
                   [src]="product.imageUrl"
@@ -76,13 +70,23 @@
                   class="mb-3 img-fluid"
               /></a>
             </div>
-            <!-- title -->
             <h2 class="fs-6">{{ product.name }}</h2>
-            <!-- price -->
-            <div class="d-flex justify-content-between align-items-center mt-3">
-              <div>
-                <span class="text-dark">${{ product.price }}</span>
-              </div>
+            <div class="d-flex align-items-center mt-3">
+              <small class="text-warning">
+                <i
+                  *ngFor="let val of product.starsRating"
+                  class="bi"
+                  [ngClass]="{
+                    'bi-star-fill': val === 1,
+                    'bi-star': val === 0,
+                    'bi-star-half': val === 0.5
+                  }"
+                ></i>
+              </small>
+              <a>{{ product.ratingValue }}({{ product.ratingCount }})</a>
+            </div>
+            <div>
+              <span class="text-dark">${{ product.price }}</span>
             </div>
           </div>
         </div>
