@@ -6,9 +6,11 @@
           <h5 class="card-title">Categories</h5>
           <ul class="navbar-nav">
             <li *ngFor="let category of categories$ | async" class="nav-item">
-              <a [routerLink]="'/categories/' + category.id" class="nav-link">{{
-                category.name
-              }}</a>
+              <a
+                [routerLink]="'/categoryProducts/' + category.id"
+                class="nav-link"
+                >{{ category.name }}</a
+              >
             </li>
           </ul>
         </div>

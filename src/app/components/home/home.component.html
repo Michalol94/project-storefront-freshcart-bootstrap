@@ -5,7 +5,10 @@
       <div *ngFor="let category of categories$ | async" class="col">
         <a class="text-decoration-none text-inherit">
           <div class="card card-product">
-            <div class="card-body text-center py-8">
+            <div
+              class="card-body text-center py-8"
+              [routerLink]="'/categoryProducts/' + category.id"
+            >
               <img [src]="category.imageUrl" [alt]="" class="mb-3" />
               <div class="text-truncate">{{ category.name }}</div>
             </div>
@@ -42,9 +45,15 @@
       </div>
     </div>
     <h3 class="my-8">Stores</h3>
+    <h5 class="my-8" *ngIf="storesWithCategories$ | async as stores">
+      We have {{ stores.length }} vendors now
+    </h5>
     <div class="row row-cols-1 row-cols-md-3 g-4">
       <div *ngFor="let item of storesWithCategories$ | async" class="col">
-        <div class="card flex-row p-8 card-product">
+        <div
+          class="card flex-row p-8 card-product"
+          [routerLink]="'/stores/' + item.id"
+        >
           <div>
             <img
               [src]="item.logoUrl"

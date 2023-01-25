@@ -3,4 +3,5 @@ export interface StoreWithTagsQueryModel {
   readonly storeCategories: string[];
   readonly distance: number;
   readonly logoUrl: string;
+  readonly id: string;
 }
