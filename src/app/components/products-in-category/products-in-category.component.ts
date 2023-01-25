@@ -3,26 +3,31 @@ import {
   Component,
   ViewEncapsulation,
 } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { FormControl, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Params } from '@angular/router';
 import {
   BehaviorSubject,
+  Observable,
+  Subject,
   combineLatest,
   debounceTime,
   map,
-  Observable,
   of,
   shareReplay,
   startWith,
   switchMap,
   tap,
 } from 'rxjs';
-import { ProductModel } from 'src/app/models/product.model';
-import { ProductsQueryModel } from 'src/app/models/products-query.model';
-import { SortProductsQueryModel } from 'src/app/models/sort-products-query.model';
-import { ProductService } from 'src/app/services/product.service';
+
+import { StarsRatingQueryModel } from '../../models/stars-rating-query.model';
+import { SortProductsQueryModel } from '../../models/sort-products-query.model';
 import { CategoryModel } from '../../models/category.model';
+import { StoreModel } from '../../models/store.model';
+import { ProductsQueryModel } from '../../models/products-query.model';
+import { ProductModel } from '../../models/product.model';
 import { CategoryService } from '../../services/category.service';
+import { ProductService } from '../../services/product.service';
+import { StoreService } from '../../services/store.service';
 
 interface Pagination {
   pageSize: number;
@@ -43,12 +48,34 @@ export class ProductsInCategoryComponent {
   public pagination$: Observable<Pagination> =
     this._paginationSubject.asObservable();
 
+  private _sortProductsByStoreSubject: Subject<Set<string>> = new Subject<
+    Set<string>
+  >();
+  public sortProductsByStore$: Observable<Set<string>> =
+    this._sortProductsByStoreSubject.asObservable();
+
+  readonly rateOptions: Observable<StarsRatingQueryModel[]> = of([
+    { value: 5, stars: this._fillStars(5) },
+    { value: 4, stars: this._fillStars(4) },
+    { value: 3, stars: this._fillStars(3) },
+    { value: 2, stars: this._fillStars(2) },
+  ]);
+
+  readonly sortByRating: FormControl = new FormControl();
+
+  readonly sortByStores: FormControl = new FormControl();
+
   readonly filterLow: FormControl = new FormControl();
   readonly filterHigh: FormControl = new FormControl();
 
   readonly limitProducts$: Observable<number[]> = of([5, 10, 15]);
 
   readonly sort: FormControl = new FormControl();
+
+  readonly storesForm: FormGroup = new FormGroup({
+    searchedStores: new FormControl(),
+    stores: new FormGroup({}),
+  });
 
   readonly sortOrder$: Observable<SortProductsQueryModel[]> = of([
     { label: 'Featured', value: 'featureValue', order: 'desc' },
@@ -67,6 +94,39 @@ export class ProductsInCategoryComponent {
       )
     );
 
+  readonly stores$: Observable<StoreModel[]> = combineLatest([
+    this.storesForm.valueChanges.pipe(
+      map((form) => form.searchedStores),
+      debounceTime(500),
+      startWith('')
+    ),
+    this._storeService.getAllStores(),
+  ]).pipe(
+    map(([search, stores]) =>
+      search
+        ? stores.filter((store) =>
+            store.name.toLowerCase().includes(search.toLowerCase())
+          )
+        : stores
+    ),
+    tap((stores) => {
+      this._addFormControl(stores);
+    })
+  );
+
+  public selectedStores$: Observable<string> = combineLatest([
+    this.storesForm.valueChanges.pipe(map((form) => form.stores)),
+    this._storeService.getAllStores(),
+  ]).pipe(
+    map(([storesForm, stores]) => {
+      return stores
+        .filter((store) => storesForm[store.id] === true)
+        .map((store) => store.id)
+        .sort()
+        .join(',');
+    })
+  );
+
   readonly filteredAndSortedProducts$: Observable<ProductsQueryModel[]> =
     combineLatest([
       this._activatedRoute.params,
@@ -74,13 +134,25 @@ export class ProductsInCategoryComponent {
       this.sort.valueChanges.pipe(startWith('priceasc')),
       this.filterLow.valueChanges.pipe(debounceTime(1000), startWith('1')),
       this.filterHigh.valueChanges.pipe(debounceTime(1000), startWith('200')),
+      this.sortByRating.valueChanges.pipe(startWith(1)),
+      this.selectedStores$,
     ]).pipe(
       map(
-        ([params, products, sortForm, filterLow, filterHigh]: [
+        ([
+          params,
+          products,
+          sortForm,
+          filterLow,
+          filterHigh,
+          sortByRating,
+          selectedStores,
+        ]: [
           Params,
           ProductModel[],
           string,
           string,
+          string,
+          number,
           string
         ]) => {
           const filteredProducts = products
@@ -102,6 +174,14 @@ export class ProductsInCategoryComponent {
             )
             .filter((product) =>
               filterHigh ? product.price <= parseInt(filterHigh) : product
+            )
+            .filter((product) =>
+              sortByRating ? product.ratingValue >= sortByRating : product
+            )
+            .filter((product) =>
+              selectedStores
+                ? product.storeIds.join(',').includes(selectedStores)
+                : product
             );
         }
       ),
@@ -145,7 +225,8 @@ export class ProductsInCategoryComponent {
   constructor(
     private _categoryService: CategoryService,
     private _activatedRoute: ActivatedRoute,
-    private _productService: ProductService
+    private _productService: ProductService,
+    private _storeService: StoreService
   ) {}
 
   changePageLimit(pageSize: number): void {
@@ -175,7 +256,7 @@ export class ProductsInCategoryComponent {
   }
 
   private _fillStars(val: number) {
-    const startArray = new Array(5);
+    const startArray = new Array();
     let i = 1;
     for (i; i <= val; i++) {
       startArray.push(1);
@@ -185,9 +266,17 @@ export class ProductsInCategoryComponent {
       startArray.push(0.5);
     }
 
-    if (startArray.length < 5) {
+    for (i; startArray.length < 5; i++) {
       startArray.push(0);
     }
+
     return startArray;
+  }
+
+  private _addFormControl(stores: StoreModel[]) {
+    const group: FormGroup = this.storesForm.get('stores') as FormGroup;
+    stores.forEach((store) =>
+      group.addControl(store.id, new FormControl(false))
+    );
   }
 }
