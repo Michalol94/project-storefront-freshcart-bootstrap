@@ -3,8 +3,16 @@ import {
   Component,
   ViewEncapsulation,
 } from '@angular/core';
+import { FormControl } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { combineLatest, map, Observable, switchMap } from 'rxjs';
+import {
+  combineLatest,
+  debounceTime,
+  map,
+  Observable,
+  startWith,
+  switchMap,
+} from 'rxjs';
 import { ProductModel } from 'src/app/models/product.model';
 import { ProductService } from 'src/app/services/product.service';
 import { StoreModel } from '../../models/store.model';
@@ -24,6 +32,8 @@ interface StoreModelQuery {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StoreProductsComponent {
+  readonly search: FormControl = new FormControl();
+
   readonly storeId$: Observable<string> = this._activatedRoute.params.pipe(
     map((params) => params['storeId'])
   );
@@ -39,11 +49,14 @@ export class StoreProductsComponent {
   readonly storeProducts$: Observable<ProductModel[]> = combineLatest([
     this._productService.getAll(),
     this.storeId$,
+    this.search.valueChanges.pipe(debounceTime(1000), startWith('')),
   ]).pipe(
-    map(([products, storeId]) =>
-      products.filter((product) => {
-        return product.storeIds.find((id) => id === storeId);
-      })
+    map(([products, storeId, form]) =>
+      products
+        .filter((product) => {
+          return product.storeIds.find((id) => id === storeId);
+        })
+        .filter((p) => p.name.toLowerCase().includes(form.toLowerCase()))
     )
   );
 
